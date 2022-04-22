@@ -65,6 +65,7 @@ void chomp(char *s) {
     *s = 0;
 }
 
+//Listo
 Producto * crearProducto(){
     Producto * new = (Producto*)malloc(sizeof(Producto));
     new->nombre = (char*)calloc(100,sizeof(char));
@@ -75,17 +76,14 @@ Producto * crearProducto(){
     return new;
 }
 
+//Listo
 void agregarProducto(Map* mapa){
     Producto * new = crearProducto();
-
+    
+    fflush(stdin);
     printf("Ingrese nombre del producto: ");
     fgets(new->nombre, 100, stdin);
     chomp(new->nombre);
-    if(searchMap(mapa, new->nombre) != NULL){
-        printf("PRODUCTO EXISTENTE");
-        return;
-    }
-    
 
     printf("\nIngrese tipo del producto: ");
     fgets(new->tipo, 30, stdin);
@@ -102,15 +100,22 @@ void agregarProducto(Map* mapa){
     scanf("%ld", &new->precio);
     printf("\n\n");
 
+    if(searchMap(mapa, new->nombre) != NULL){
+        Producto * copiaProd = searchMap(mapa, new->nombre);
+
+        printf("PRODUCTO EXISTENTE\n\n");
+        copiaProd->stock += new->stock;
+        return;
+    }
     insertMap(mapa, new->nombre, new);
 }
 
+//Listo
 void importarCSV(Map* mapaNombre){
     FILE *fp = fopen ("Archivo_100productos.csv", "r");
 
     char linea[1024];
 
-    fgets (linea, 1023, fp);
     int k=0;
 
     while (fgets (linea, 1023, fp) != NULL) {
@@ -130,18 +135,23 @@ void importarCSV(Map* mapaNombre){
     fclose(fp);
 }
 
+void mostrarProducto(Producto* prod){
+    printf("[%s] / %s / %s\n", prod->nombre, prod->marca, prod->tipo);
+    printf("Stock: %ld\n$%ld\n\n", prod->stock, prod->precio);
+}
+
+//Listo
 void mostrarMapa(Map * mapa){
     Producto* aux = firstMap(mapa);
     while (aux) {
-        printf("[%s] / %s / %s\n", aux->nombre, aux->marca, aux->tipo);
-        printf("Stock: %ld\n$%ld\n\n", aux->stock, aux->precio);
+        mostrarProducto(aux);
         aux = nextMap(mapa);
     }
 }
 
 bool menu(Map * mapaNombre){
     int respuesta;
-    printf("Que desea hacer?\nAgregar producto (1)\nMostrar Todos Los Datos (2)\nEXIT (3)\n");
+    printf("Que desea hacer?\nAgregar producto (1)\nMostrar Todos Los Datos (2)\nMostrar Producto por Nombre (3) \nEXIT (4)\n");
     scanf("%d", &respuesta);
 
     if (respuesta == 1){
@@ -152,7 +162,13 @@ bool menu(Map * mapaNombre){
         mostrarMapa(mapaNombre);
         return true;
     }
-    if(respuesta == 3) return false;
+    if (respuesta == 3){
+        char aux[100];
+        printf("\nIngrese el Nombre del producto buscado: ")
+        fgets();
+        mostrarProducto();
+    }
+    if(respuesta == 4) return false;
 
 }
 
