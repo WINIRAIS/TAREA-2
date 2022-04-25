@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "Map.h"
+#include "list_answer.c"
 
 typedef struct{
     char title[50];

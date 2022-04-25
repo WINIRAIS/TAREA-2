@@ -84,7 +84,16 @@ void agregarProducto(Map* mapa){
     printf("Ingrese nombre del producto: ");
     fgets(new->nombre, 100, stdin);
     chomp(new->nombre);
+    if(searchMap(mapa, new->nombre) != NULL){
+        Producto * copiaProd = searchMap(mapa, new->nombre);
 
+        printf("PRODUCTO EXISTENTE\n");
+        printf("\nNo Agregar (1)\nAgrgar de Todas Formas (2)\n");
+        int resultado;
+        scanf("%d", resultado);
+        if(resultado == 2) copiaProd->stock += new->stock;
+        else{ free(new); return; }
+    }
     printf("\nIngrese tipo del producto: ");
     fgets(new->tipo, 30, stdin);
     chomp(new->tipo);
@@ -100,18 +109,11 @@ void agregarProducto(Map* mapa){
     scanf("%ld", &new->precio);
     printf("\n\n");
 
-    if(searchMap(mapa, new->nombre) != NULL){
-        Producto * copiaProd = searchMap(mapa, new->nombre);
-
-        printf("PRODUCTO EXISTENTE\n\n");
-        copiaProd->stock += new->stock;
-        return;
-    }
     insertMap(mapa, new->nombre, new);
 }
 
 //Listo
-void importarCSV(Map* mapaNombre){
+void importarCSV(Map* mapaNombre, Map* mapaTipo){
     FILE *fp = fopen ("Archivo_100productos.csv", "r");
 
     char linea[1024];
@@ -130,6 +132,7 @@ void importarCSV(Map* mapaNombre){
         new->stock = atoi(get_csv_field(linea, 3));
         new->precio = atoi(get_csv_field(linea, 4));
         insertMap(mapaNombre,(new->nombre),new);
+        insertMap(mapaTipo,(new->tipo),new);
         k++;
     }
     fclose(fp);
@@ -176,9 +179,12 @@ int main() {
 
     
     Map * mapaNombre = createMap(is_equal_string);
-    setSortFunction(mapaNombre,lower_than_string);
+    Map * mapaTipo = createMap(is_equal_string);
 
-    importarCSV(mapaNombre);
+    setSortFunction(mapaNombre,lower_than_string);
+    setSortFunction(mapaTipo,lower_than_string);
+
+    importarCSV(mapaNombre,mapaTipo);
 
     while(menu(mapaNombre));
 
