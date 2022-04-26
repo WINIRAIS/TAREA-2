@@ -93,8 +93,11 @@ void agregarProducto(Map* mapa){
         int resultado;
         scanf("%d", &resultado);
         if(resultado == 2){ 
+            int cantidadAgregada;
             eraseMap(mapa, new->nombre);
-            copiaProd->stock += 1;
+            printf("INGRESE CANTIDAD \n");
+            scanf("%d", &cantidadAgregada);
+            copiaProd->stock += cantidadAgregada;
             insertMap(mapa,new->nombre,copiaProd);
             return;
         } else{ free(new); return; }
@@ -119,7 +122,7 @@ void agregarProducto(Map* mapa){
 }
 
 //Listo
-void importarCSV(Map * mapaNombre, Map * mapaTipo, Map * mapaMarca){
+void importarCSV(Map * mapaNombre){
     FILE *fp = fopen ("Archivo_100productos.csv", "r");
 
     char linea[1024];
@@ -137,9 +140,9 @@ void importarCSV(Map * mapaNombre, Map * mapaTipo, Map * mapaMarca){
         chomp(new->tipo);
         new->stock = atoi(get_csv_field(linea, 3));
         new->precio = atoi(get_csv_field(linea, 4));
+
         insertMap(mapaNombre,(new->nombre),new);
-        insertMap(mapaTipo,(new->tipo),new);
-        insertMap(mapaMarca,(new->marca),new);
+
         k++;
     }
     fclose(fp);
@@ -181,22 +184,39 @@ void MostrarPorNombre(Map * mapa){
 }
 void MostrarPorTipo(Map * mapa){
     char key[30];
-    printf("INGRESE TIPO PRODUCTO\n");
+    printf("INGRESE TIPO DEL PRODUCTO\n");
     
     fflush(stdin);
     fgets(key, 30, stdin);
     chomp(key);
 
-    Map * aux = firstMap(mapa);// esta ordenado asi que deberia de darme el primer dato en relacion a la key
+    Producto * aux = firstMap(mapa);// esta ordenado asi que deberia de darme el primer dato en relacion a la key
     while(aux != NULL){
-        if(strcmp(aux->current->key,key) == 0){
+        if(strcmp(aux->tipo,key) == 0){
             mostrarProducto(aux);
         }
         aux = nextMap(mapa);
-    }
 
+    }
 }
-bool menu(Map * mapaNombre, Map* mapaTipo, Map * mapaMarca){
+void MostrarPorMarca(Map * mapa){
+    char key[30];
+    printf("INGRESE MARCA DEL PRODUCTO\n");
+    
+    fflush(stdin);
+    fgets(key, 30, stdin);
+    chomp(key);
+
+    Producto * aux = firstMap(mapa);// esta ordenado asi que deberia de darme el primer dato en relacion a la key
+    while(aux != NULL){
+        if(strcmp(aux->marca,key) == 0){
+            mostrarProducto(aux);
+        }
+        aux = nextMap(mapa);
+
+    }
+}
+bool menu(Map * mapa){
     int respuesta;
     printf("Que desea hacer?\n\nAgregar producto (1)\nMostrar Producto por Nombre (2)\n");
     printf("Mostrar Por Tipo (3)\nMostrar Por Marca (4)\nMostrar Todos Los Datos (5) \nEXIT (6)\n");
@@ -204,24 +224,24 @@ bool menu(Map * mapaNombre, Map* mapaTipo, Map * mapaMarca){
     scanf("%d", &respuesta);
 
     if (respuesta == 1){
-      agregarProducto(mapaNombre);
+      agregarProducto(mapa);
       return true;  
     } 
     if (respuesta == 2) {
-        MostrarPorNombre(mapaNombre);
+        MostrarPorNombre(mapa);
         return true;
     }
     if (respuesta == 3){
-        MostrarPorTipo(mapaTipo);
+        MostrarPorTipo(mapa);
         return true;
     }
     if(respuesta == 4){
-        MostrarPorNombre(mapaMarca);
+        MostrarPorMarca(mapa);
         return true;
     }
     if(respuesta == 5){ 
         printf("\n");
-        mostrarMapa(mapaNombre);
+        mostrarMapa(mapa);
         return true;
     }
     if(respuesta == 6) return false;
@@ -231,17 +251,13 @@ bool menu(Map * mapaNombre, Map* mapaTipo, Map * mapaMarca){
 int main() {
 
     
-    Map * mapaNombre = createMap(is_equal_string);
-    Map * mapaTipo = createMap(is_equal_string);
-    Map * mapaMarca = createMap(is_equal_string);
+    Map * mapa = createMap(is_equal_string);
 
-    setSortFunction(mapaNombre,lower_than_string);
-    setSortFunction(mapaTipo,lower_than_string);
-    setSortFunction(mapaMarca,lower_than_string);
+    setSortFunction(mapa,lower_than_string);
 
-    importarCSV(mapaNombre,mapaTipo,mapaMarca);
+    importarCSV(mapa);
 
-    while(menu(mapaNombre,mapaTipo,mapaMarca));
+    while(menu(mapa));
 
     return 0;
 }
