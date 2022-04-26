@@ -3,6 +3,7 @@
 #include <string.h>
 #include "Map.c"
 #include  <stdbool.h>
+
 typedef struct{
     char *nombre;
     char *tipo;
@@ -87,13 +88,18 @@ void agregarProducto(Map* mapa){
     if(searchMap(mapa, new->nombre) != NULL){
         Producto * copiaProd = searchMap(mapa, new->nombre);
 
-        printf("PRODUCTO EXISTENTE\n");
+        printf("\nPRODUCTO EXISTENTE\n");
         printf("\nNo Agregar (1)\nAgrgar de Todas Formas (2)\n");
         int resultado;
-        scanf("%d", resultado);
-        if(resultado == 2) copiaProd->stock += new->stock;
-        else{ free(new); return; }
+        scanf("%d", &resultado);
+        if(resultado == 2){ 
+            eraseMap(mapa, new->nombre);
+            copiaProd->stock += 1;
+            insertMap(mapa,new->nombre,copiaProd);
+            return;
+        } else{ free(new); return; }
     }
+    fflush(stdin);
     printf("\nIngrese tipo del producto: ");
     fgets(new->tipo, 30, stdin);
     chomp(new->tipo);
@@ -113,7 +119,7 @@ void agregarProducto(Map* mapa){
 }
 
 //Listo
-void importarCSV(Map* mapaNombre, Map* mapaTipo){
+void importarCSV(Map * mapaNombre, Map * mapaTipo, Map * mapaMarca){
     FILE *fp = fopen ("Archivo_100productos.csv", "r");
 
     char linea[1024];
@@ -133,6 +139,7 @@ void importarCSV(Map* mapaNombre, Map* mapaTipo){
         new->precio = atoi(get_csv_field(linea, 4));
         insertMap(mapaNombre,(new->nombre),new);
         insertMap(mapaTipo,(new->tipo),new);
+        insertMap(mapaMarca,(new->marca),new);
         k++;
     }
     fclose(fp);
@@ -151,10 +158,49 @@ void mostrarMapa(Map * mapa){
         aux = nextMap(mapa);
     }
 }
+void MostrarPorNombre(Map * mapa){
+    char key[100];
+    printf("INGRESE NOMBRE\n");
+    
+    fflush(stdin);
+    fgets(key, 100, stdin);
+    chomp(key);
 
-bool menu(Map * mapaNombre){
+    Producto* aux = searchMap(mapa,key);
+
+    if(aux == NULL){
+        int res;
+        printf("NOMBRE NO EXISTE\n");
+        printf("\nPara Agregar (1)\nVolver al Menu Principal (2)\n");
+        scanf("%d", &res);
+        if(res == 1) agregarProducto(mapa);
+        if(res == 2) return;
+        else return;
+    } 
+    mostrarProducto(aux);
+}
+void MostrarPorTipo(Map * mapa){
+    char key[30];
+    printf("INGRESE TIPO PRODUCTO\n");
+    
+    fflush(stdin);
+    fgets(key, 30, stdin);
+    chomp(key);
+
+    Map * aux = firstMap(mapa);// esta ordenado asi que deberia de darme el primer dato en relacion a la key
+    while(aux != NULL){
+        if(strcmp(aux->current->key,key) == 0){
+            mostrarProducto(aux);
+        }
+        aux = nextMap(mapa);
+    }
+
+}
+bool menu(Map * mapaNombre, Map* mapaTipo, Map * mapaMarca){
     int respuesta;
-    printf("Que desea hacer?\nAgregar producto (1)\nMostrar Todos Los Datos (2)\nMostrar Producto por Nombre (3) \nEXIT (4)\n");
+    printf("Que desea hacer?\n\nAgregar producto (1)\nMostrar Producto por Nombre (2)\n");
+    printf("Mostrar Por Tipo (3)\nMostrar Por Marca (4)\nMostrar Todos Los Datos (5) \nEXIT (6)\n");
+
     scanf("%d", &respuesta);
 
     if (respuesta == 1){
@@ -162,16 +208,23 @@ bool menu(Map * mapaNombre){
       return true;  
     } 
     if (respuesta == 2) {
-        mostrarMapa(mapaNombre);
+        MostrarPorNombre(mapaNombre);
         return true;
     }
     if (respuesta == 3){
-        char aux[100];
-        printf("\nIngrese el Nombre del producto buscado: ")
-        fgets();
-        mostrarProducto();
+        MostrarPorTipo(mapaTipo);
+        return true;
     }
-    if(respuesta == 4) return false;
+    if(respuesta == 4){
+        MostrarPorNombre(mapaMarca);
+        return true;
+    }
+    if(respuesta == 5){ 
+        printf("\n");
+        mostrarMapa(mapaNombre);
+        return true;
+    }
+    if(respuesta == 6) return false;
 
 }
 
@@ -180,13 +233,15 @@ int main() {
     
     Map * mapaNombre = createMap(is_equal_string);
     Map * mapaTipo = createMap(is_equal_string);
+    Map * mapaMarca = createMap(is_equal_string);
 
     setSortFunction(mapaNombre,lower_than_string);
     setSortFunction(mapaTipo,lower_than_string);
+    setSortFunction(mapaMarca,lower_than_string);
 
-    importarCSV(mapaNombre,mapaTipo);
+    importarCSV(mapaNombre,mapaTipo,mapaMarca);
 
-    while(menu(mapaNombre));
+    while(menu(mapaNombre,mapaTipo,mapaMarca));
 
     return 0;
 }
