@@ -2,22 +2,22 @@
 #include <stdlib.h>
 #include <assert.h>
 
-typedef struct Node Node;
+typedef struct NodeMap NodeMap;
 
-struct Node {
+struct NodeMap {
     void * key;
     /*! Puntero al dato */
     void * data;
 
     /*! Puntero al siguiente nodo */
-    Node * next;
+    NodeMap * next;
 
     /*! Puntero al anterior nodo */
-    Node * prev;
+    NodeMap * prev;
 };
 
-Node* _createNode(void * key, void * data) {
-    Node  * new = (Node *)malloc(sizeof(Node));
+NodeMap* _createNode(void * key, void * data) {
+    NodeMap  * new = (NodeMap *)malloc(sizeof(NodeMap));
 
     assert(new != NULL);
 
@@ -30,13 +30,13 @@ Node* _createNode(void * key, void * data) {
 
 struct Map {
     /*! Puntero al incio (cabeza) de la lista */
-    Node * head;
+    NodeMap * head;
 
     /*! Puntero al final (cola) de la lista */
-    Node * tail;
+    NodeMap * tail;
 
     /*! Punteor para poder recorrer la lista */
-    Node * current;
+    NodeMap * current;
 
     int (*is_equal)(void* key1, void* key2);
     int (*lower_than)(void* key1, void* key2);
@@ -80,7 +80,7 @@ void * nextMap(Map * list) {
 void _pushFront(Map * list, void * key, void * value) {
     assert(list != NULL); // list no puede ser NULL.
 
-    Node * new = _createNode(key, value);
+    NodeMap * new = _createNode(key, value);
 
     if (list->head == NULL) {
         list->tail = new;
@@ -97,7 +97,7 @@ void insertMap(Map * list, void * key, void * value){
 
     assert(list != NULL); // list no puede ser NULL.
 
-    Node* aux= list->head;
+    NodeMap* aux= list->head;
 
     //se revisa si el elemento existe
     while(aux){
@@ -123,7 +123,7 @@ void insertMap(Map * list, void * key, void * value){
     
     list->current = aux;
 
-    Node* new = _createNode(key, value);
+    NodeMap* new = _createNode(key, value);
 
     new->next = list->current->next;
     new->prev = list->current;
@@ -145,7 +145,7 @@ void * _popFront(Map * list) {
 
     if (list->head == NULL) return NULL;
 
-    Node * aux = list->head;
+    NodeMap * aux = list->head;
 
     void * data = (void *)aux->data;
 
@@ -167,7 +167,7 @@ void * _popBack(Map * list) {
 
     if (list->head == NULL) return NULL;
 
-    Node * aux = list->tail;
+    NodeMap * aux = list->tail;
 
     void * data = (void *)aux->data;
 
@@ -188,7 +188,7 @@ void * _popBack(Map * list) {
 void* searchMap(Map * list, void * key) {
     assert(list != NULL); // list no puede ser NULL.
 
-    Node* aux= list->head;
+    NodeMap* aux= list->head;
     //the minimum element
     while (aux && list->is_equal(key,aux->key)==0) aux=aux->next;
 
@@ -201,7 +201,7 @@ void* searchMap(Map * list, void * key) {
 void * eraseMap(Map * list, void * key) {
     assert(list != NULL); // list no puede ser NULL.
 
-    Node* aux= list->head;
+    NodeMap* aux= list->head;
     while (aux && list->is_equal(key,aux->key)==0) aux=aux->next;
 
     list->current=aux;
